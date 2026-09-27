@@ -34,11 +34,9 @@ runs:
         build/build.sh -j"$(nproc)"
       else
         sed -i '/name = "kernel_aarch64",/a\    check_defconfig = "disabled",' common/BUILD.bazel
-
-        grep -RniE 'LTO_CLANG_(FULL|THIN)|LTO_CLANG|lto' common/BUILD.bazel common/kleaf common 2>/dev/null | head -100
-        
         tools/bazel build \
           --config=fast \
+          --lto=full \
           --disk_cache=/home/runner/.cache/bazel \
           //common:kernel_aarch64/Image
       fi
