@@ -41,6 +41,15 @@ runs:
           --disk_cache=/home/runner/.cache/bazel \
           //common:kernel_aarch64/Image || BUILD_FAILED=1
 
+        echo "===== Generated kernel config ====="
+        find bazel-out -name '.config' -type f -print 2>/dev/null || true
+
+        echo "===== Rust Binder config ====="
+        find bazel-out -name '.config' -type f -print0 2>/dev/null | while IFS= read -r -d '' f; do
+          echo "--- $f ---"
+          grep 'CONFIG_ANDROID_BINDER_IPC_RUST' "$f" || true
+        done
+
         echo "===== rust_binder.ko search ====="
         find bazel-out -name 'rust_binder.ko' -print 2>/dev/null || true
 
