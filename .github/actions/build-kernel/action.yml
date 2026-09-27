@@ -34,11 +34,25 @@ runs:
         build/build.sh -j"$(nproc)"
       else
         sed -i '/name = "kernel_aarch64",/a\    check_defconfig = "disabled",' common/BUILD.bazel
+
         tools/bazel build \
           --config=fast \
           --lto=full \
           --disk_cache=/home/runner/.cache/bazel \
-          //common:kernel_aarch64/Image
+          //common:kernel_aarch64/Image || BUILD_FAILED=1
+
+        echo "===== rust_binder.ko search ====="
+        find bazel-out -name 'rust_binder.ko' -print 2>/dev/null || true
+
+        echo "===== binder files ====="
+        find bazel-out -type f 2>/dev/null | grep -i binder || true
+
+        echo "===== rust_binder references ====="
+        grep -R "rust_binder" -n common --exclude-dir=.git || true
+
+        if [ "${BUILD_FAILED:-0}" = "1" ]; then
+          exit 1
+        fi
       fi
 
   - name: 'Gather Build Artifacts'
