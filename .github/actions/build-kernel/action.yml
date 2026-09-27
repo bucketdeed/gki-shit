@@ -35,17 +35,9 @@ runs:
       else
         sed -i '/name = "kernel_aarch64",/a\    check_defconfig = "disabled",' common/BUILD.bazel
 
-        echo "===== Rust Binder configuration ====="
-        grep -R "CONFIG_ANDROID_BINDER_IPC_RUST" -n \
-          common/arch/arm64/configs/gki_defconfig \
-          common/arch/x86/configs/gki_defconfig \
-          common/drivers/android/binder/Makefile || true
-
-        echo "===== Rust Binder module declaration ====="
-        cat common/drivers/android/binder/Makefile
-
-        echo "===== Expected Rust Binder modules ====="
-        grep -n -C 3 "rust_binder.ko" common/modules.bzl || true
+        # TEMPORARY TEST
+        sed -i 's/CONFIG_ANDROID_BINDER_IPC_RUST=m/CONFIG_ANDROID_BINDER_IPC_RUST=y/' \
+          common/arch/arm64/configs/gki_defconfig
 
         tools/bazel build \
           --config=fast \
@@ -53,27 +45,30 @@ runs:
           --disk_cache=/home/runner/.cache/bazel \
           //common:kernel_aarch64/Image || BUILD_FAILED=1
 
-        echo "===== Generated kernel configs ====="
-        find bazel-out -type f \( -name '.config' -o -name 'kernel_config' \) -print 2>/dev/null || true
+        echo "===== ALL Rust Binder build artifacts ====="
+        find bazel-out -type f \
+          \( \
+            -name 'rust_binder.ko' -o \
+            -name 'rust_binder.o' -o \
+            -name 'rust_binder_main.o' -o \
+            -name 'rust_binderfs.o' -o \
+            -name 'rust_binder_events.o' -o \
+            -name 'rust_binder_hooks.o' -o \
+            -name 'page_range_helper.o' \
+          \) \
+          -print 2>/dev/null || true
 
-        echo "===== Rust Binder config anywhere in bazel-out ====="
-        grep -R "CONFIG_ANDROID_BINDER_IPC_RUST" bazel-out 2>/dev/null | head -50 || true
+        echo "===== Generated kernel config ====="
+        find bazel-out -type f -name '.config' -print 2>/dev/null || true
 
-        echo "===== rust_binder.ko search ====="
-        find bazel-out -type f -name 'rust_binder.ko' -print 2>/dev/null || true
-
-        echo "===== Binder-related modules ====="
-        find bazel-out -type f -name '*.ko' 2>/dev/null \
-          | grep -Ei 'binder|android' \
-          | head -100 || true
-
-        echo "===== rust_binder references ====="
-        grep -R "rust_binder" -n common --exclude-dir=.git || true
+        echo "===== Rust Binder config ====="
+        grep -R "CONFIG_ANDROID_BINDER_IPC_RUST" bazel-out 2>/dev/null | head -20 || true
 
         if [ "${BUILD_FAILED:-0}" = "1" ]; then
           exit 1
         fi
       fi
+
 
 
   - name: 'Gather Build Artifacts'
