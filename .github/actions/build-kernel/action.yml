@@ -35,26 +35,37 @@ runs:
       else
         sed -i '/name = "kernel_aarch64",/a\    check_defconfig = "disabled",' common/BUILD.bazel
 
+        echo "===== Rust Binder configuration ====="
+        grep -R "CONFIG_ANDROID_BINDER_IPC_RUST" -n \
+          common/arch/arm64/configs/gki_defconfig \
+          common/arch/x86/configs/gki_defconfig \
+          common/drivers/android/binder/Makefile || true
+
+        echo "===== Rust Binder module declaration ====="
+        cat common/drivers/android/binder/Makefile
+
+        echo "===== Expected Rust Binder modules ====="
+        grep -n -C 3 "rust_binder.ko" common/modules.bzl || true
+
         tools/bazel build \
           --config=fast \
           --lto=full \
           --disk_cache=/home/runner/.cache/bazel \
           //common:kernel_aarch64/Image || BUILD_FAILED=1
 
-        echo "===== Generated kernel config ====="
-        find bazel-out -name '.config' -type f -print 2>/dev/null || true
+        echo "===== Generated kernel configs ====="
+        find bazel-out -type f \( -name '.config' -o -name 'kernel_config' \) -print 2>/dev/null || true
 
-        echo "===== Rust Binder config ====="
-        find bazel-out -name '.config' -type f -print0 2>/dev/null | while IFS= read -r -d '' f; do
-          echo "--- $f ---"
-          grep 'CONFIG_ANDROID_BINDER_IPC_RUST' "$f" || true
-        done
+        echo "===== Rust Binder config anywhere in bazel-out ====="
+        grep -R "CONFIG_ANDROID_BINDER_IPC_RUST" bazel-out 2>/dev/null | head -50 || true
 
         echo "===== rust_binder.ko search ====="
-        find bazel-out -name 'rust_binder.ko' -print 2>/dev/null || true
+        find bazel-out -type f -name 'rust_binder.ko' -print 2>/dev/null || true
 
-        echo "===== binder files ====="
-        find bazel-out -type f 2>/dev/null | grep -i binder || true
+        echo "===== Binder-related modules ====="
+        find bazel-out -type f -name '*.ko' 2>/dev/null \
+          | grep -Ei 'binder|android' \
+          | head -100 || true
 
         echo "===== rust_binder references ====="
         grep -R "rust_binder" -n common --exclude-dir=.git || true
@@ -63,6 +74,7 @@ runs:
           exit 1
         fi
       fi
+
 
   - name: 'Gather Build Artifacts'
     shell: bash
