@@ -83,7 +83,7 @@ runs:
           fi
           tools/bazel build \
             --copt=-flto=full \ 
-            --linkopt=-flto=full
+            --linkopt=-flto=full \
             "${PAGE_SIZE_FLAGS[@]}" \
             --disk_cache=/home/runner/.cache/bazel \
             //common:kernel_aarch64/Image
