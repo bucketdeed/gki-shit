@@ -116,7 +116,7 @@ runs:
           next)     upstream_branch="dev" ;;
           kowsu)    upstream_branch="master" ;;
           finasu)   upstream_branch="master" ;;
-          bakasu)   upstream_branch="sync-up" ;;
+          bakasu)   upstream_branch="main" ;;
           *)        upstream_branch="main" ;;
         esac
         base_commit="$(git -C "$directory" merge-base HEAD "refs/remotes/origin/${upstream_branch}" 2>/dev/null || echo "$actual_commit")"
