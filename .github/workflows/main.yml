@@ -346,7 +346,7 @@ jobs:
             FINASU_COMMIT="$(pick "$PIN_FINASU" https://github.com/LyraVoid/FinaSU.git refs/heads/master)"
           else
             KERNELSU_COMMIT="$(resolve_sha https://github.com/tiann/KernelSU.git refs/heads/main)"
-            BAKASU_COMMIT="$(resolve_sha https://github.com/Baka-SU/BakaSU.git refs/heads/main)"
+            BAKASU_COMMIT="$(resolve_sha https://github.com/Baka-SU/BakaSU.git refs/heads/sync-up)"
             SUKISU_ULTRA_COMMIT="$(resolve_sha https://github.com/SukiSU-Ultra/SukiSU-Ultra.git refs/heads/main)"
             FINASU_COMMIT="$(resolve_sha https://github.com/LyraVoid/FinaSU.git refs/heads/master)"
           fi
